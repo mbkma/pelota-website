@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Pelota palette: amber #ffb632, red #c22b26, cream #eed78d, ink #241a30 -->
+  <defs>
+    <clipPath id="ball"><circle cx="122" cy="122" r="104"/></clipPath>
+  </defs>
+  <circle cx="134" cy="134" r="108" fill="#c22b26"/>
+  <circle cx="122" cy="122" r="104" fill="#ffb632"/>
+  <g clip-path="url(#ball)" fill="none" stroke="#eed78d" stroke-width="14" stroke-linecap="round">
+    <path d="M 38 26 C 96 76, 96 168, 38 218"/>
+    <path d="M 206 26 C 148 76, 148 168, 206 218"/>
+  </g>
+  <circle cx="122" cy="122" r="104" fill="none" stroke="#241a30" stroke-width="10"/>
+</svg>

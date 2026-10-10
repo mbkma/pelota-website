@@ -1,160 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Pelota - A 3D tennis simulation game built with Godot. Experience realistic tennis gameplay with advanced physics and immersive graphics.">
-    <meta name="keywords" content="tennis, game, 3D, simulation, Godot, sports">
-    <meta property="og:title" content="Pelota - 3D Tennis Game">
-    <meta property="og:description" content="A 3D tennis simulation game with realistic physics and graphics.">
-    <title>Pelota - 3D Tennis Game</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#241a30">
+  <title>Pelota – Tennis Game</title>
+  <meta name="description" content="Pelota is a free, open source 3D tennis game built with Godot. Download the alpha for Linux and Windows.">
+  <meta property="og:title" content="Pelota – Tennis Game">
+  <meta property="og:description" content="A free, open source 3D tennis game. Download the alpha for Linux and Windows.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
+  <style>
+    /* Pelota palette (assets/pelota_color_palette.gpl in the game repo) */
+    :root {
+      --teal: #007f94;
+      --purple: #4b385e;
+      --red: #c22b26;
+      --cream: #eed78d;
+      --amber: #ffb632;
+      /* Shades derived from the palette, shared with the game's UI theme */
+      --ink: #241a30;
+      --deep: #31243f;
+      --teal-light: #59acb9;
+      --text: var(--cream);
+      --muted: rgba(238, 215, 141, 0.72);
+      --border: rgba(238, 215, 141, 0.16);
+      --radius: 10px;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--ink);
+      color: var(--text);
+      font: 17px/1.6 "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    a { color: var(--amber); }
+
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(36, 26, 48, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 3px solid var(--purple);
+    }
+
+    header .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--amber);
+      font-weight: 900;
+      font-size: 1.35rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      text-shadow: 2px 2px 0 var(--red);
+    }
+
+    .brand img { width: 32px; height: 32px; }
+
+    nav a {
+      color: var(--muted);
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 22px;
+    }
+
+    nav a:hover { color: var(--amber); }
+
+    /* Hero: retro sunset stripes over a court */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 72px 0 0;
+      text-align: center;
+      background: linear-gradient(180deg, var(--ink) 0%, var(--deep) 55%, var(--purple) 100%);
+    }
+
+    .hero .wrap { position: relative; z-index: 1; padding-bottom: 72px; }
+
+    .hero::before {
+      /* sun */
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 120px;
+      width: min(560px, 120vw);
+      aspect-ratio: 1;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--amber) 35%, var(--red) 75%);
+      -webkit-mask: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 30px) 0 0 / 100% 100%;
+              mask: repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 30px) 0 0 / 100% 100%;
+      opacity: 0.22;
+    }
+
+    .hero::after {
+      /* court stripes at the horizon */
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22px;
+      background: linear-gradient(180deg,
+        var(--amber) 0 25%, var(--red) 25% 50%, var(--teal) 50% 75%, var(--purple) 75% 100%);
+    }
+
+    .hero-logo { width: 112px; height: 112px; filter: drop-shadow(0 6px 0 var(--ink)); }
+
+    .badge {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 3px 14px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--teal);
+      color: var(--cream);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: 0 3px 0 var(--ink);
+    }
+
+    h1 {
+      margin: 14px 0 6px;
+      color: var(--amber);
+      font-size: clamp(3rem, 12vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow: 4px 5px 0 var(--red), 7px 9px 0 var(--ink);
+    }
+
+    .tagline {
+      max-width: 580px;
+      margin: 18px auto 34px;
+      color: var(--cream);
+      font-size: 1.2rem;
+    }
+
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .button {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 230px;
+      padding: 12px 24px;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--teal);
+      color: var(--cream);
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 6px 0 var(--ink);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+    }
+
+    .button small { font-weight: 400; opacity: 0.8; }
+
+    .button.primary { background: var(--amber); color: var(--ink); }
+
+    .button:hover { background: var(--amber); color: var(--ink); }
+    .button.primary:hover { background: var(--cream); }
+
+    .button:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+
+    .button:focus-visible, nav a:focus-visible, a:focus-visible {
+      outline: 3px solid var(--cream);
+      outline-offset: 3px;
+    }
+
+    .release-links { margin-top: 26px; color: var(--muted); font-size: 0.95rem; }
+    .release-links a { color: var(--cream); }
+
+    section { padding: 64px 0; }
+    section:nth-of-type(even) { background: var(--deep); }
+
+    h2 {
+      display: inline-block;
+      margin: 0 0 28px;
+      color: var(--amber);
+      font-size: 1.9rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-shadow: 3px 3px 0 var(--red);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .feature {
+      padding: 20px 20px 22px;
+      background: var(--purple);
+      border: 2px solid var(--ink);
+      border-top: 6px solid var(--teal);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--ink);
+    }
+
+    .feature:nth-child(3n + 2) { border-top-color: var(--amber); }
+    .feature:nth-child(3n) { border-top-color: var(--red); }
+
+    .feature h3 { margin: 0 0 6px; font-size: 1.1rem; font-weight: 800; color: var(--cream); }
+    .feature p { margin: 0; color: var(--muted); }
+
+    .table-scroll {
+      overflow-x: auto;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--ink);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--purple);
+    }
+
+    th, td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    th {
+      background: var(--teal);
+      color: var(--cream);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 1.8em;
+      padding: 0 7px;
+      border: 2px solid var(--ink);
+      border-radius: 5px;
+      background: var(--cream);
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.85em;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: 0 2px 0 var(--ink);
+    }
+
+    .notes { color: var(--muted); }
+    .notes p { margin: 10px 0; }
+    .notes strong { color: var(--cream); }
+    .table-scroll + .notes { margin-top: 24px; }
+
+    .columns {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    .columns h3 { margin: 0 0 8px; color: var(--cream); font-weight: 800; }
+
+    code {
+      padding: 1px 7px;
+      border-radius: 5px;
+      background: var(--ink);
+      color: var(--amber);
+      font-size: 0.9em;
+    }
+
+    footer {
+      padding: 32px 0;
+      border-top: 3px solid var(--purple);
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    footer a { color: var(--cream); }
+
+    @media (max-width: 560px) {
+      nav { display: none; }
+      .button { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .button { transition: none; }
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-gray-100">
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-emerald-500/30">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Pelota</h1>
-                </div>
-                <ul class="hidden md:flex space-x-8">
-                    <li><a href="#features" class="text-gray-300 hover:text-emerald-400 transition">Features</a></li>
-                    <li><a href="#download" class="text-gray-300 hover:text-emerald-400 transition">Download</a></li>
-                    <li><a href="#about" class="text-gray-300 hover:text-emerald-400 transition">About</a></li>
-                    <li><a href="#contact" class="text-gray-300 hover:text-emerald-400 transition">Contact</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="#"><img src="favicon.svg" alt="">Pelota</a>
+      <nav>
+        <a href="#download">Download</a>
+        <a href="#features">Features</a>
+        <a href="#controls">Controls</a>
+        <a href="https://github.com/mbkma/pelota">GitHub</a>
+      </nav>
+    </div>
+  </header>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl"></div>
-            <div class="absolute bottom-20 right-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl"></div>
+  <main>
+    <div class="hero" id="download">
+      <div class="wrap">
+        <img class="hero-logo" src="favicon.svg" alt="Pelota tennis ball logo">
+        <div class="badge">Alpha 0.1.0</div>
+        <h1>Pelota</h1>
+        <p class="tagline">A free, open source 3D tennis game. Time your shots, play with spin and take on the AI or a friend.</p>
+        <div class="downloads">
+          <a class="button" id="download-windows" href="https://github.com/mbkma/pelota/releases/download/v0.1.0-alpha/Pelota-0.1.0-alpha-windows-x86_64.zip">
+            Download for Windows
+            <small>64-bit · .zip · 116 MB</small>
+          </a>
+          <a class="button" id="download-linux" href="https://github.com/mbkma/pelota/releases/download/v0.1.0-alpha/Pelota-0.1.0-alpha-linux-x86_64.tar.gz">
+            Download for Linux
+            <small>x86_64 · .tar.gz · 108 MB</small>
+          </a>
         </div>
-        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
-            <h2 class="text-5xl sm:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">Welcome to Pelota</h2>
-            <p class="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">Experience realistic 3D tennis simulation with advanced physics and immersive gameplay</p>
-            <a href="#download" class="inline-block px-10 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold rounded-lg hover:from-emerald-400 hover:to-cyan-400 transform hover:scale-105 transition duration-300 shadow-lg hover:shadow-emerald-500/50">
-                Download Now
-            </a>
+        <p class="release-links">
+          <a href="https://github.com/mbkma/pelota/releases/tag/v0.1.0-alpha">Release notes and checksums</a> ·
+          <a href="https://github.com/mbkma/pelota/releases">All releases</a>
+        </p>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="wrap">
+        <h2>What's in the alpha</h2>
+        <div class="features">
+          <div class="feature">
+            <h3>Ball physics</h3>
+            <p>Topspin dips and kicks up, slices skid low, balls clip the net cord and dribble over.</p>
+          </div>
+          <div class="feature">
+            <h3>Timing-based shots</h3>
+            <p>Press early, aim while you hold and release just before the ball meets the racket for a perfect shot.</p>
+          </div>
+          <div class="feature">
+            <h3>Serve and volley</h3>
+            <p>Flat, slice and kick serves, volleys at the net, drop shots and drop volleys.</p>
+          </div>
+          <div class="feature">
+            <h3>AI opponents</h3>
+            <p>Computer players with their own play styles, from steady baseliners to aggressive attackers.</p>
+          </div>
+          <div class="feature">
+            <h3>Local two-player</h3>
+            <p>Play a friend on one PC with keyboard and gamepad, with split-screen views.</p>
+          </div>
+          <div class="feature">
+            <h3>Broadcast feel</h3>
+            <p>TV-style scoreboard, umpire calls, a reacting crowd, court sounds and match statistics.</p>
+          </div>
         </div>
+      </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-20 px-4 max-w-6xl mx-auto">
-        <h2 class="text-4xl font-bold text-center mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Features</h2>
-        <p class="text-center text-gray-400 mb-16">Discover what makes Pelota a unique tennis experience</p>
-
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">⚙️</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">Realistic Physics</h3>
-                <p class="text-gray-400">Advanced physics engine for authentic tennis ball behavior and court mechanics</p>
-            </div>
-
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">🎨</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">3D Graphics</h3>
-                <p class="text-gray-400">Immersive 3D environments with detailed court designs and dynamic lighting</p>
-            </div>
-
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">⚡</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">Smooth Gameplay</h3>
-                <p class="text-gray-400">Optimized performance and responsive controls for competitive play</p>
-            </div>
-
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">🎮</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">Built with Godot</h3>
-                <p class="text-gray-400">Developed using the powerful and free Godot game engine</p>
-            </div>
-
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">🌍</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">Cross-Platform</h3>
-                <p class="text-gray-400">Play on multiple platforms thanks to Godot's excellent cross-platform support</p>
-            </div>
-
-            <div class="group bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 transition">
-                <div class="text-4xl mb-4">🔓</div>
-                <h3 class="text-xl font-bold text-emerald-400 mb-3 group-hover:text-cyan-400 transition">Open Source</h3>
-                <p class="text-gray-400">Community-driven development with transparent and collaborative approach</p>
-            </div>
+    <section id="controls">
+      <div class="wrap">
+        <h2>Controls</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Action</th><th>Keyboard</th><th>Gamepad</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Move / aim</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or arrow keys</td><td>Left stick, D-pad</td></tr>
+              <tr><td>Topspin / flat</td><td><kbd>Space</kbd></td><td>A</td></tr>
+              <tr><td>Slice</td><td><kbd>Shift</kbd></td><td>X</td></tr>
+              <tr><td>Drop shot</td><td><kbd>Ctrl</kbd></td><td>Y</td></tr>
+              <tr><td>Pause</td><td><kbd>Esc</kbd></td><td>Start</td></tr>
+            </tbody>
+          </table>
         </div>
+        <div class="notes">
+          <p><strong>Rally:</strong> press a stroke button early and the player runs to the ball by itself. Aim with the direction while you hold the button, then release it just before the ball reaches the racket.</p>
+          <p><strong>Serve:</strong> hold a stroke button (flat, slice or kick) and aim into the service box, release to toss the ball, then press any stroke button again right before the racket meets the ball.</p>
+        </div>
+      </div>
     </section>
 
-    <!-- Download Section -->
-    <section id="download" class="py-20 px-4 relative">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl"></div>
+    <section id="install">
+      <div class="wrap">
+        <h2>Getting started</h2>
+        <div class="columns notes">
+          <div>
+            <h3>Windows</h3>
+            <p>Unzip the download and double-click <code>Pelota.exe</code>.</p>
+            <p>The alpha is not code-signed, so Windows SmartScreen may warn about an unknown publisher: click <em>More info</em>, then <em>Run anyway</em>.</p>
+          </div>
+          <div>
+            <h3>Linux</h3>
+            <p>Extract the archive and run <code>./Pelota.x86_64</code>.</p>
+            <p>If it does not start, make it executable with <code>chmod +x Pelota.x86_64</code>.</p>
+          </div>
+          <div>
+            <h3>Requirements</h3>
+            <p>64-bit Windows 10/11 or Linux, a graphics card with Vulkan support (or Direct3D 12 on Windows), a keyboard or gamepad.</p>
+          </div>
         </div>
-        <div class="relative z-10 max-w-6xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Download Pelota</h2>
-            <p class="text-gray-300 text-lg mb-12">Get started today. Choose your platform and join the Pelota community</p>
-
-            <div class="flex flex-col sm:flex-row gap-6 justify-center">
-                <a href="https://github.com/mbkma/pelota/releases" target="_blank" class="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold rounded-lg hover:from-emerald-400 hover:to-cyan-400 transform hover:scale-105 transition duration-300 shadow-lg hover:shadow-emerald-500/50">
-                    <span class="text-xl">📥</span>
-                    <span>Download from GitHub</span>
-                </a>
-                <a href="https://github.com/mbkma/pelota" target="_blank" class="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-slate-800 border border-cyan-500/50 text-gray-100 font-bold rounded-lg hover:border-cyan-400 hover:bg-slate-700 transform hover:scale-105 transition duration-300">
-                    <span class="text-xl">⭐</span>
-                    <span>View on GitHub</span>
-                </a>
-            </div>
-        </div>
+        <p class="notes">This is an early alpha: expect bugs and missing features. Found a problem? <a href="https://github.com/mbkma/pelota/issues">Report it on GitHub</a>.</p>
+      </div>
     </section>
+  </main>
 
-    <!-- About Section -->
-    <section id="about" class="py-20 px-4 max-w-6xl mx-auto">
-        <h2 class="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">About Pelota</h2>
+  <footer>
+    <div class="wrap">
+      Pelota is open source under the <a href="https://github.com/mbkma/pelota/blob/main/LICENSE">GPL-3.0 license</a> ·
+      Made with <a href="https://godotengine.org">Godot</a> ·
+      <a href="https://github.com/mbkma/pelota">Source code</a>
+    </div>
+  </footer>
 
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 sm:p-12 border border-emerald-500/30">
-            <p class="text-lg text-gray-300 mb-6 leading-relaxed">
-                Pelota is a 3D tennis simulation game developed with passion using the Godot game engine. Our goal is to deliver an authentic tennis experience with realistic physics, intuitive controls, and engaging gameplay.
-            </p>
-            <p class="text-lg text-gray-300 leading-relaxed">
-                Whether you're a tennis enthusiast or a casual gamer, Pelota offers an immersive and enjoyable experience. The game combines accurate ball physics with responsive player mechanics, allowing for both competitive and casual play.
-            </p>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 px-4 relative">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl"></div>
-        </div>
-        <div class="relative z-10 max-w-6xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Get Involved</h2>
-            <p class="text-gray-300 text-lg mb-12">Have questions or want to contribute? Connect with us</p>
-
-            <div class="grid sm:grid-cols-3 gap-6">
-                <a href="https://github.com/mbkma/pelota" target="_blank" class="group p-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-emerald-500/30 hover:border-emerald-500/60 transition hover:shadow-lg hover:shadow-emerald-500/20">
-                    <div class="text-3xl mb-3">📦</div>
-                    <span class="text-emerald-400 group-hover:text-cyan-400 transition font-semibold">GitHub Repository</span>
-                </a>
-                <a href="https://github.com/mbkma/pelota/issues" target="_blank" class="group p-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-emerald-500/30 hover:border-emerald-500/60 transition hover:shadow-lg hover:shadow-emerald-500/20">
-                    <div class="text-3xl mb-3">🐛</div>
-                    <span class="text-emerald-400 group-hover:text-cyan-400 transition font-semibold">Report Issues</span>
-                </a>
-                <a href="https://github.com/mbkma/pelota/discussions" target="_blank" class="group p-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-emerald-500/30 hover:border-emerald-500/60 transition hover:shadow-lg hover:shadow-emerald-500/20">
-                    <div class="text-3xl mb-3">💬</div>
-                    <span class="text-emerald-400 group-hover:text-cyan-400 transition font-semibold">Discussions</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="border-t border-emerald-500/30 bg-slate-950/50 py-8 px-4">
-        <div class="max-w-6xl mx-auto text-center text-gray-400">
-            <p class="mb-2">&copy; 2024 Pelota - A 3D Tennis Game. Built with Godot.</p>
-            <p><a href="https://github.com/mbkma/pelota/blob/main/LICENSE" target="_blank" class="text-emerald-400 hover:text-cyan-400 transition">License</a></p>
-        </div>
-    </footer>
+  <script>
+    // Highlight the download for the visitor's system.
+    const platform = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent).toLowerCase();
+    const primary = platform.includes("linux") && !platform.includes("android") ? "download-linux" : "download-windows";
+    document.getElementById(primary).classList.add("primary");
+  </script>
 </body>
 </html>
