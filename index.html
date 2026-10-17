@@ -341,21 +341,21 @@
     <div class="hero" id="download">
       <div class="wrap">
         <img class="hero-logo" src="favicon.svg" alt="Pelota tennis ball logo">
-        <div class="badge">Alpha 0.1.0</div>
+        <div class="badge" id="release-badge">Alpha</div>
         <h1>Pelota</h1>
         <p class="tagline">A free, open source 3D tennis game. Time your shots, play with spin and take on the AI or a friend.</p>
         <div class="downloads">
-          <a class="button" id="download-windows" href="https://github.com/mbkma/pelota/releases/download/v0.1.0-alpha/Pelota-0.1.0-alpha-windows-x86_64.zip">
+          <a class="button" id="download-windows" href="https://github.com/mbkma/pelota/releases/latest">
             Download for Windows
-            <small>64-bit · .zip · 203 MB</small>
+            <small>64-bit · .zip<span class="size"></span></small>
           </a>
-          <a class="button" id="download-linux" href="https://github.com/mbkma/pelota/releases/download/v0.1.0-alpha/Pelota-0.1.0-alpha-linux-x86_64.tar.gz">
+          <a class="button" id="download-linux" href="https://github.com/mbkma/pelota/releases/latest">
             Download for Linux
-            <small>x86_64 · .tar.gz · 194 MB</small>
+            <small>x86_64 · .tar.gz<span class="size"></span></small>
           </a>
         </div>
         <p class="release-links">
-          <a href="https://github.com/mbkma/pelota/releases/tag/v0.1.0-alpha">Release notes and checksums</a> ·
+          <a href="https://github.com/mbkma/pelota/releases/latest">Release notes and checksums</a> ·
           <a href="https://github.com/mbkma/pelota/releases">All releases</a>
         </p>
       </div>
@@ -399,19 +399,20 @@
         <div class="table-scroll">
           <table>
             <thead>
-              <tr><th>Action</th><th>Keyboard</th><th>Gamepad</th></tr>
+              <tr><th>Action</th><th>Keyboard &amp; mouse</th><th>Keyboard only</th><th>Gamepad</th></tr>
             </thead>
             <tbody>
-              <tr><td>Move / aim</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or arrow keys</td><td>Left stick, D-pad</td></tr>
-              <tr><td>Topspin / flat</td><td><kbd>Space</kbd></td><td>A</td></tr>
-              <tr><td>Slice</td><td><kbd>Shift</kbd></td><td>X</td></tr>
-              <tr><td>Drop shot</td><td><kbd>Ctrl</kbd></td><td>Y</td></tr>
-              <tr><td>Pause</td><td><kbd>Esc</kbd></td><td>Start</td></tr>
+              <tr><td>Move</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td>Left stick, D-pad</td></tr>
+              <tr><td>Aim</td><td>Mouse</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td>Left stick</td></tr>
+              <tr><td>Topspin / flat</td><td>Left click</td><td><kbd>J</kbd></td><td>A</td></tr>
+              <tr><td>Slice</td><td>Right click</td><td><kbd>K</kbd></td><td>X</td></tr>
+              <tr><td>Drop shot</td><td><kbd>Q</kbd></td><td><kbd>L</kbd></td><td>Y</td></tr>
+              <tr><td>Pause</td><td><kbd>Esc</kbd></td><td><kbd>Esc</kbd></td><td>Start</td></tr>
             </tbody>
           </table>
         </div>
         <div class="notes">
-          <p><strong>Rally:</strong> press a stroke button early and the player runs to the ball by itself. Aim with the direction while you hold the button, then release it just before the ball reaches the racket.</p>
+          <p><strong>Rally:</strong> press a stroke button early and the player runs to the ball by itself. Aim (mouse, keys or stick) while you hold the button, then release it just before the ball reaches the racket.</p>
           <p><strong>Serve:</strong> hold a stroke button (flat, slice or kick) and aim into the service box, release to toss the ball, then press any stroke button again right before the racket meets the ball.</p>
         </div>
       </div>
@@ -455,6 +456,26 @@
     const platform = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent).toLowerCase();
     const primary = platform.includes("linux") && !platform.includes("android") ? "download-linux" : "download-windows";
     document.getElementById(primary).classList.add("primary");
+
+    // The buttons lead to the latest release's page; from GitHub, make them download its
+    // archives directly (Pelota-<version>-windows-x86_64.zip, ...-linux-x86_64.tar.gz) and show
+    // its version and the archives' sizes.
+    const archives = { "download-windows": "-windows-x86_64.zip", "download-linux": "-linux-x86_64.tar.gz" };
+    fetch("https://api.github.com/repos/mbkma/pelota/releases/latest")
+      .then((response) => response.ok ? response.json() : Promise.reject(response.status))
+      .then((release) => {
+        // v0.2.0-alpha -> Alpha 0.2.0
+        document.getElementById("release-badge").textContent =
+          "Alpha " + release.tag_name.replace(/^v/, "").replace(/-alpha$/, "");
+        for (const [id, ending] of Object.entries(archives)) {
+          const asset = release.assets.find((asset) => asset.name.endsWith(ending));
+          if (!asset) continue;
+          const button = document.getElementById(id);
+          button.href = asset.browser_download_url;
+          button.querySelector(".size").textContent = ` · ${Math.round(asset.size / 1e6)} MB`;
+        }
+      })
+      .catch((error) => console.warn("Could not read the latest release:", error));
   </script>
 </body>
 </html>
